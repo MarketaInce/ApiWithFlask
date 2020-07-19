@@ -3,7 +3,7 @@ SECURITY
 """
 
 from werkzeug.security import safe_str_cmp
-from code.section_4.src.user import User
+from code.earlier_sections.section_4 import User
 
 users = [
     User(1, 'bob', 'asdf')

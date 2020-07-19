@@ -3,7 +3,7 @@ SECURITY
 """
 
 from werkzeug.security import safe_str_cmp
-from code.section_5.src.user import User
+from code.earlier_sections.section_5 import User
 
 
 def authenticate(username, password):

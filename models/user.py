@@ -2,7 +2,6 @@
 MODELS/USER
 This module consists of the UserModel.
 """
-import sqlite3
 from db import db
 
 

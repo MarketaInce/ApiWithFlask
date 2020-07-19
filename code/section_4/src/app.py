@@ -6,7 +6,7 @@ from flask import Flask
 from flask_restful import Resource, Api, reqparse
 from flask_jwt import JWT, jwt_required
 
-from code.section_5.src.security import authenticate, identity
+from security import authenticate, identity
 
 app = Flask(__name__)
 app.secret_key = 'jose'

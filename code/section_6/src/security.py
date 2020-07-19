@@ -3,7 +3,7 @@ SECURITY
 """
 
 from werkzeug.security import safe_str_cmp
-from models.user import UserModel
+from models import UserModel
 
 
 def authenticate(username, password):
