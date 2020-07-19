@@ -28,7 +28,10 @@ class ItemModel(db.Model):
         Returns the JSON in dict format.
         :return:
         """
-        return {'name': self.name, 'price': self.price}
+        return {'id': self.id,
+                'name': self.name,
+                'price': self.price,
+                'store_id': self.store_id}
 
     @classmethod
     def find_by_name(cls, name):
@@ -38,6 +41,14 @@ class ItemModel(db.Model):
         :return:
         """
         return cls.query.filter_by(name=name).first()
+
+    @classmethod
+    def find_all(cls):
+        """
+
+        :return:
+        """
+        return cls.query.all()
 
     def save_to_db(self):
         """

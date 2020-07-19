@@ -110,4 +110,4 @@ class ItemList(Resource):
         :return:
         """
 
-        return {'items': [item.json() for item in ItemModel.query.all()]}, 200
+        return {'items': [item.json() for item in ItemModel.find_all()]}, 200

@@ -51,4 +51,4 @@ class StoreList(Resource):
         Get method for the list of stores.
         :return:
         """
-        return {'stores': [store.json() for store in StoreModel.query.all()]}
+        return {'stores': [store.json() for store in StoreModel.find_all()]}

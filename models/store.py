@@ -24,7 +24,9 @@ class StoreModel(db.Model):
         Returns the JSON in dict format.
         :return:
         """
-        return {'name': self.name, 'items': [item.json() for item in self.items.all()]}
+        return {'id': self.id,
+                'name': self.name,
+                'items': [item.json() for item in self.items.all()]}
 
     @classmethod
     def find_by_name(cls, name):
@@ -34,6 +36,14 @@ class StoreModel(db.Model):
         :return:
         """
         return cls.query.filter_by(name=name).first()
+
+    @classmethod
+    def find_all(cls):
+        """
+
+        :return:
+        """
+        return cls.query.all()
 
     def save_to_db(self):
         """

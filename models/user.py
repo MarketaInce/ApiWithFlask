@@ -20,11 +20,23 @@ class UserModel(db.Model):
         self.username = username
         self.password = password
 
+    def json(self):
+        return {'id': self.id,
+                'username': self.username
+            }
+
     def save_to_db(self):
         """
         An internal model function that inserts data into database.
         """
         db.session.add(self)
+        db.session.commit()
+
+    def delete_from_db(self):
+        """
+        An internal model function that deletes data from database.
+        """
+        db.session.delete(self)
         db.session.commit()
 
     @classmethod
