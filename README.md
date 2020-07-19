@@ -1,2 +1,5 @@
-# api_with_flask
-Trying to work with flask and SQL Alchemy for building backend.
+# Stores REST Api
+
+This is built with Flask, Flask-RESTful, Flask-JWT and Flask-SQLAlchemy.
+
+Deployedon Heroku.
