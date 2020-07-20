@@ -1,13 +1,18 @@
 """
-MODELS/USER
-This module consists of the UserModel.
+USER MODEL
+
+Model is an internal representation of the data, the external
+one is called as a Resource (User Model vs User Resource).
+UserModel inherits SQLAlchemy class and provides
+useful helper functions for any UserModel object created from it.
 """
+
 from db import db
 
 
 class UserModel(db.Model):
     """
-    A proper user Class.
+    UserModel class is the internal representation of User Resource objects.
     """
 
     __tablename__ = "users"
@@ -21,20 +26,24 @@ class UserModel(db.Model):
         self.password = password
 
     def json(self):
+        """
+        Return the user data in dict form.
+        :return:
+        """
         return {'id': self.id,
                 'username': self.username
-            }
+                }
 
     def save_to_db(self):
         """
-        An internal model function that inserts data into database.
+        An internal model function that inserts data into database and commits session.
         """
         db.session.add(self)
         db.session.commit()
 
     def delete_from_db(self):
         """
-        An internal model function that deletes data from database.
+        An internal model function that deletes user from database and commits session.
         """
         db.session.delete(self)
         db.session.commit()

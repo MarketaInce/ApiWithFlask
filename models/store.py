@@ -1,13 +1,19 @@
 """
-MODELS/STORE
-This module consists of the StoreModel.
+STORE MODEL
+
+Model is an internal representation of the data, the external
+one is called as a Resource (Store Model vs Store Resource).
+StoreModel inherits SQLAlchemy class and provides
+useful helper functions for any StoreModel object created from it.
 """
+
+
 from db import db
 
 
 class StoreModel(db.Model):
     """
-    ItemModel class is the internal representation of Item objects.
+    StoreModel class is the internal representation of Item Resource objects.
     """
     __tablename__ = "stores"
 
@@ -40,7 +46,7 @@ class StoreModel(db.Model):
     @classmethod
     def find_all(cls):
         """
-
+        An internal function to select all rows from table.
         :return:
         """
         return cls.query.all()

@@ -1,13 +1,17 @@
 """
-MODELS/ITEM
+ITEM MODEL
+
+Model is an internal representation of the data, the external one is called as a Resource (Item Model vs Item Resource).
+ItemModel inherits SQLAlchemy class and provides useful helper functions for any ItemModel object created from it.
 """
 
+# Import SQLAlchemy object db from db module.
 from db import db
 
 
 class ItemModel(db.Model):
     """
-    ItemModel class is the internal representation of Item objects.
+    ItemModel class is the internal representation of Item Resource objects.
     """
     __tablename__ = "items"
 
@@ -45,7 +49,7 @@ class ItemModel(db.Model):
     @classmethod
     def find_all(cls):
         """
-
+        An internal function to select all rows from table.
         :return:
         """
         return cls.query.all()
