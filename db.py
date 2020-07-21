@@ -8,8 +8,3 @@ from flask_sqlalchemy import SQLAlchemy
 
 # Create db, A SQL Alchemy DB object
 db = SQLAlchemy()
-
-
-
-
-

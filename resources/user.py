@@ -5,21 +5,33 @@ HTTP verb methods for UserRegister, User, UserLogin, UserLogout and TokenRefresh
 """
 from flask_restful import Resource, reqparse
 from werkzeug.security import safe_str_cmp
-from flask_jwt_extended import create_access_token, create_refresh_token, jwt_refresh_token_required, get_jwt_identity, \
-    jwt_required, get_raw_jwt
+from flask_jwt_extended import (
+    create_access_token,
+    create_refresh_token,
+    jwt_refresh_token_required,
+    get_jwt_identity,
+    jwt_required,
+    get_raw_jwt,
+)
 
 from blacklist import BLACKLIST
 from models.user import UserModel
 
+BLANK_ERROR = "'{}' cannot be blank."
+USER_ALREADY_EXISTS = "A user with that username already exists."
+CREATED_SUCCESSFULLY = "User created successfully."
+USER_NOT_FOUND = "User not found."
+USER_DELETED = "User deleted."
+INVALID_CREDENTIALS = "Invalid credentials!"
+USER_LOGGED_OUT = "User <id={}> successfully logged out."
+
 _user_parser = reqparse.RequestParser()
-_user_parser.add_argument('username',
-                          type=str,
-                          required=True,
-                          help="This field cannot be blank.")
-_user_parser.add_argument('password',
-                          type=str,
-                          required=True,
-                          help="This field cannot be blank.")
+_user_parser.add_argument(
+    "username", type=str, required=True, help=BLANK_ERROR.format("username")
+)
+_user_parser.add_argument(
+    "password", type=str, required=True, help=BLANK_ERROR.format("password")
+)
 
 
 class UserRegister(Resource):
@@ -37,8 +49,8 @@ class UserRegister(Resource):
         data = _user_parser.parse_args()
 
         # If user already exists, POST doesn't work.
-        if UserModel.find_by_username(data['username']):
-            return {'message': 'A user with that username already exists.'}, 400
+        if UserModel.find_by_username(data["username"]):
+            return {"message": USER_ALREADY_EXISTS}, 400
 
         # Creating a user instance using UserModel.
         # This object has some useful extra methods in it on top of the user data.
@@ -47,7 +59,7 @@ class UserRegister(Resource):
         # Use save_to_db() method of UserModel
         user.save_to_db()
 
-        return {"message": "User created succesfully."}, 201
+        return {"message": CREATED_SUCCESSFULLY}, 201
 
 
 class User(Resource):
@@ -56,7 +68,7 @@ class User(Resource):
     """
 
     @classmethod
-    def get(cls, user_id):
+    def get(cls, user_id: int):
         """
         The get method that handles GET requests.
         :param user_id: ID of the user.
@@ -68,13 +80,13 @@ class User(Resource):
 
         # If user doesn't exist, give an error.
         if not user:
-            return {"message": "User not found"}, 404
+            return {"message": USER_NOT_FOUND}, 404
 
         # If user exists, return the content as a dictionary.
         return user.json()
 
     @classmethod
-    def delete(cls, user_id):
+    def delete(cls, user_id: int):
         """
         The delete method that handles DELETE requests.
         :param user_id: ID of the user.
@@ -86,13 +98,13 @@ class User(Resource):
 
         # If user doesn't exist, return message.
         if not user:
-            return {"message": "User not found"}, 404
+            return {"message": USER_NOT_FOUND}, 404
 
         # If it exists, delete the user from database.
         user.delete_from_db()
 
         # Return a message indicating that the user is deleted.
-        return {'message': 'User deleted.'}, 200
+        return {"message": USER_DELETED}, 200
 
 
 class UserLogin(Resource):
@@ -115,20 +127,17 @@ class UserLogin(Resource):
         """
 
         data = _user_parser.parse_args()
-        user = UserModel.find_by_username(data['username'])
+        user = UserModel.find_by_username(data["username"])
 
         # This is what authenticate function used to do.
-        if user and safe_str_cmp(user.password, data['password']):
+        if user and safe_str_cmp(user.password, data["password"]):
             # identity= is what identity function used to do.
             access_token = create_access_token(identity=user.id, fresh=True)
             refresh_token = create_refresh_token(user.id)
 
-            return {
-                       'access_token': access_token,
-                       'refresh_token': refresh_token
-                   }, 200
+            return {"access_token": access_token, "refresh_token": refresh_token}, 200
 
-        return {'message': 'Invalid credentials'}, 401
+        return {"message": INVALID_CREDENTIALS}, 401
 
 
 class UserLogout(Resource):
@@ -136,17 +145,19 @@ class UserLogout(Resource):
     User Logout class requests user to login next time, without actually blacklisting.
     """
 
+    @classmethod
     @jwt_required
-    def post(self):
+    def post(cls):
         """
         The post method that handles POST requests.
         Just the ID of the token is blacklisted without blacklisting the user_id so that
         the user can get one more token and login again.
         :return:
         """
-        jti = get_raw_jwt()['jti']  # jti is "JWT ID", a unique identifier for a JWT.
+        jti = get_raw_jwt()["jti"]  # jti is "JWT ID", a unique identifier for a JWT.
+        user_id = get_jwt_identity()
         BLACKLIST.add(jti)
-        return {'message': 'Successfully logged out.'}, 200
+        return {"message": USER_LOGGED_OUT.format(user_id)}, 200
 
 
 class TokenRefresh(Resource):
@@ -155,12 +166,13 @@ class TokenRefresh(Resource):
     This API refreshes access tokens using refresh tokens which do not change for a user until re-authentication.
     """
 
+    @classmethod
     @jwt_refresh_token_required
-    def post(self):
+    def post(cls):
         """
         The post method that handles POST requests.
         :return:
         """
         current_user = get_jwt_identity()
         new_token = create_access_token(identity=current_user, fresh=False)
-        return {'access_token': new_token}, 200
+        return {"access_token": new_token}, 200

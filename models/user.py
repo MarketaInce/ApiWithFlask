@@ -6,8 +6,11 @@ one is called as a Resource (User Model vs User Resource).
 UserModel inherits SQLAlchemy class and provides
 useful helper functions for any UserModel object created from it.
 """
+from typing import Dict, Union
 
 from db import db
+
+UserJSON = Dict[str, Union[int, str]]
 
 
 class UserModel(db.Model):
@@ -21,27 +24,25 @@ class UserModel(db.Model):
     username = db.Column(db.String(80))
     password = db.Column(db.String(80))
 
-    def __init__(self, username, password):
+    def __init__(self, username: str, password: str):
         self.username = username
         self.password = password
 
-    def json(self):
+    def json(self) -> UserJSON:
         """
         Return the user data in dict form.
         :return:
         """
-        return {'id': self.id,
-                'username': self.username
-                }
+        return {"id": self.id, "username": self.username}
 
-    def save_to_db(self):
+    def save_to_db(self) -> None:
         """
         An internal model function that inserts data into database and commits session.
         """
         db.session.add(self)
         db.session.commit()
 
-    def delete_from_db(self):
+    def delete_from_db(self) -> None:
         """
         An internal model function that deletes user from database and commits session.
         """
@@ -49,7 +50,7 @@ class UserModel(db.Model):
         db.session.commit()
 
     @classmethod
-    def find_by_username(cls, username):
+    def find_by_username(cls, username: str) -> "UserModel":
         """
         Find by username via filtering through username.
         :param username:
@@ -59,7 +60,7 @@ class UserModel(db.Model):
         return cls.query.filter_by(username=username).first()
 
     @classmethod
-    def find_by_id(cls, _id):
+    def find_by_id(cls, _id: int) -> "UserModel":
         """
         Find by ID via filtering through ID.
         :param _id:

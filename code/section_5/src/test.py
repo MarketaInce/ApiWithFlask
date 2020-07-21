@@ -6,7 +6,7 @@ import sqlite3
 
 # -- Starting Boilerplate/Setup -- #
 # Create a connection
-connection = sqlite3.connect('data.db')
+connection = sqlite3.connect("data.db")
 
 # Create a cursor into the database
 cursor = connection.cursor()
@@ -24,14 +24,11 @@ select_query = "SELECT * FROM users"
 cursor.execute(create_table)
 
 # Execute the cursor to insert into table.
-user = (1, 'jose', 'asdf')
+user = (1, "jose", "asdf")
 cursor.execute(insert_query, user)
 
 # Execute the cursor to insert multiple rows into table.
-users = [
-    (2, 'rolf', 'asdf'),
-    (3, 'anne', 'xyz')
-]
+users = [(2, "rolf", "asdf"), (3, "anne", "xyz")]
 cursor.executemany(insert_query, users)
 
 # Select from the table.
@@ -44,6 +41,3 @@ connection.commit()
 
 # Close Connection
 connection.close()
-
-
-

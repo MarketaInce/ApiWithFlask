@@ -5,9 +5,7 @@ SECURITY
 from werkzeug.security import safe_str_cmp
 from code.earlier_sections.section_4 import User
 
-users = [
-    User(1, 'bob', 'asdf')
-]
+users = [User(1, "bob", "asdf")]
 
 username_mapping = {u.username: u for u in users}
 userid_mapping = {u.id: u for u in users}
@@ -31,5 +29,5 @@ def identity(payload):
     :param payload:
     :return:
     """
-    user_id = payload['identity']
+    user_id = payload["identity"]
     return userid_mapping.get(user_id, None)

@@ -11,15 +11,14 @@ class Item(Resource):
     """
     A Flask-RestFul Resource object for accessing items inside /items.
     """
+
     parser = reqparse.RequestParser()
-    parser.add_argument('price',
-                        type=float,
-                        required=True,
-                        help="This field cannot be left blank!")
-    parser.add_argument('store_id',
-                        type=int,
-                        required=True,
-                        help="Every item needs a store ID.")
+    parser.add_argument(
+        "price", type=float, required=True, help="This field cannot be left blank!"
+    )
+    parser.add_argument(
+        "store_id", type=int, required=True, help="Every item needs a store ID."
+    )
 
     @jwt_required()
     def get(self, name):
@@ -33,7 +32,7 @@ class Item(Resource):
             return item.json()
 
             # If row returns none, 404 status_code is returned with a message.
-        return {'message': 'Item not found'}, 404
+        return {"message": "Item not found"}, 404
 
     @classmethod
     def post(cls, name):
@@ -45,7 +44,10 @@ class Item(Resource):
 
         # Check whether the request is properly made.
         if ItemModel.find_by_name(name):
-            return {'message': "An item with name '{}' already exists".format(name)}, 400
+            return (
+                {"message": "An item with name '{}' already exists".format(name)},
+                400,
+            )
 
         # Load data
         request_data = cls.parser.parse_args()
@@ -56,8 +58,14 @@ class Item(Resource):
         try:
             item.save_to_db()
         except Exception as e:
-            return {'message': 'An error occured inserting the item. Here is the error {}'.format(
-                e)}, 500  # Internal Server Error
+            return (
+                {
+                    "message": "An error occured inserting the item. Here is the error {}".format(
+                        e
+                    )
+                },
+                500,
+            )  # Internal Server Error
 
         # Return "response" with item and status code 201: CREATED
         return item.json(), 201
@@ -91,7 +99,7 @@ class Item(Resource):
         if item is None:
             item = ItemModel(name, **request_data)
         else:
-            item.price = request_data['price']
+            item.price = request_data["price"]
 
         # In either case: insert or update we need to save to db ==> save_to_db()
         item.save_to_db()
@@ -110,4 +118,4 @@ class ItemList(Resource):
         :return:
         """
 
-        return {'items': [item.json() for item in ItemModel.query.all()]}, 200
+        return {"items": [item.json() for item in ItemModel.query.all()]}, 200

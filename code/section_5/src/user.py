@@ -23,7 +23,7 @@ class User:
         :return:
         """
 
-        connection = sqlite3.connect('data.db')
+        connection = sqlite3.connect("data.db")
         cursor = connection.cursor()
 
         query = "SELECT * FROM users WHERE username=?"
@@ -46,7 +46,7 @@ class User:
         :return:
         """
 
-        connection = sqlite3.connect('data.db')
+        connection = sqlite3.connect("data.db")
         cursor = connection.cursor()
 
         query = "SELECT * FROM users WHERE id=?"
@@ -66,15 +66,14 @@ class UserRegister(Resource):
     """
     User Registration class.
     """
+
     parser = reqparse.RequestParser()
-    parser.add_argument('username',
-                        type=str,
-                        required=True,
-                        help="This field cannot be blank.")
-    parser.add_argument('password',
-                        type=str,
-                        required=True,
-                        help="This field cannot be blank.")
+    parser.add_argument(
+        "username", type=str, required=True, help="This field cannot be blank."
+    )
+    parser.add_argument(
+        "password", type=str, required=True, help="This field cannot be blank."
+    )
 
     @classmethod
     def post(cls):
@@ -84,14 +83,14 @@ class UserRegister(Resource):
 
         data = cls.parser.parse_args()
 
-        if User.find_by_username(data['username']):
-            return {'message': 'A user with that username already exists.'}, 400
+        if User.find_by_username(data["username"]):
+            return {"message": "A user with that username already exists."}, 400
 
-        connection = sqlite3.connect('data.db')
+        connection = sqlite3.connect("data.db")
         cursor = connection.cursor()
 
         query = "INSERT INTO users VALUES (NULL, ?, ?)"
-        cursor.execute(query, (data['username'], data['password']))
+        cursor.execute(query, (data["username"], data["password"]))
 
         connection.commit()
         connection.close()

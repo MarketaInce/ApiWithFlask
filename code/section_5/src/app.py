@@ -12,7 +12,7 @@ from security import authenticate, identity
 from code.earlier_sections.section_5 import UserRegister
 
 app = Flask(__name__)
-app.secret_key = 'jose'
+app.secret_key = "jose"
 api = Api(app)
 
 jwt = JWT(app, authenticate, identity)  # /auth endpoint
@@ -24,9 +24,9 @@ jwt = JWT(app, authenticate, identity)  # /auth endpoint
 # This is risky. Probably you won't use it.
 
 
-api.add_resource(Item, '/item/<string:name>')
-api.add_resource(ItemList, '/items')
-api.add_resource(UserRegister, '/register')
+api.add_resource(Item, "/item/<string:name>")
+api.add_resource(ItemList, "/items")
+api.add_resource(UserRegister, "/register")
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(port=5000, debug=True)

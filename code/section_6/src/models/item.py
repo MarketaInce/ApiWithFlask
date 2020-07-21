@@ -9,14 +9,15 @@ class ItemModel(db.Model):
     """
     ItemModel class is the internal representation of Item objects.
     """
+
     __tablename__ = "items"
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80))
     price = db.Column(db.Float(precision=2))
 
-    store_id = db.Column(db.Integer, db.ForeignKey('stores.id'))
-    store = db.relationship('StoreModel')
+    store_id = db.Column(db.Integer, db.ForeignKey("stores.id"))
+    store = db.relationship("StoreModel")
 
     def __init__(self, name, price, store_id):
         self.name = name
@@ -28,7 +29,7 @@ class ItemModel(db.Model):
         Returns the JSON in dict format.
         :return:
         """
-        return {'name': self.name, 'price': self.price}
+        return {"name": self.name, "price": self.price}
 
     @classmethod
     def find_by_name(cls, name):

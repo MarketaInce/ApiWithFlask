@@ -24,5 +24,5 @@ def identity(payload):
     :param payload:
     :return:
     """
-    user_id = payload['identity']
+    user_id = payload["identity"]
     return User.find_by_id(user_id)
