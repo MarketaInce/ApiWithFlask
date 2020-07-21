@@ -67,7 +67,7 @@ class Item(Resource):
         try:
             item.save_to_db()
         except Exception as e:
-            return {'message': 'An error occured inserting the item. Here is the error {}'.format(
+            return {'message': 'An error occurred inserting the item. Here is the error {}'.format(
                 e)}, 500  # Internal Server Error
 
         # Return "response" with item and status code 201: CREATED

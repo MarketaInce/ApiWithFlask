@@ -15,13 +15,19 @@ class ItemModel(db.Model):
     """
     __tablename__ = "items"
 
+    # The pieces of information that builds the SQL database, i.e. the schema.
+    # ItemModel has initially three columns: id(int), name(str) and price(float)
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80))
     price = db.Column(db.Float(precision=2))
 
+    # Item table has a N to 1 relationship with the Stores table.
+    # We add store_id(int) as another column. This column is actually a foreign key
+    # directing to the Stores table.
     store_id = db.Column(db.Integer, db.ForeignKey('stores.id'))
     store = db.relationship('StoreModel')
 
+    # Constructor
     def __init__(self, name, price, store_id):
         self.name = name
         self.price = price
