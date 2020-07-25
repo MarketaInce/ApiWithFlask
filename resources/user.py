@@ -3,7 +3,8 @@ USER RESOURCE
 
 HTTP verb methods for UserRegister, User, UserLogin, UserLogout and TokenRefresh Resources described below.
 """
-from flask_restful import Resource, reqparse
+from flask import request
+from flask_restful import Resource
 from werkzeug.security import safe_str_cmp
 from flask_jwt_extended import (
     create_access_token,
@@ -16,8 +17,8 @@ from flask_jwt_extended import (
 
 from blacklist import BLACKLIST
 from models.user import UserModel
+from schemas.user import UserSchema
 
-BLANK_ERROR = "'{}' cannot be blank."
 USER_ALREADY_EXISTS = "A user with that username already exists."
 CREATED_SUCCESSFULLY = "User created successfully."
 USER_NOT_FOUND = "User not found."
@@ -25,13 +26,7 @@ USER_DELETED = "User deleted."
 INVALID_CREDENTIALS = "Invalid credentials!"
 USER_LOGGED_OUT = "User <id={}> successfully logged out."
 
-_user_parser = reqparse.RequestParser()
-_user_parser.add_argument(
-    "username", type=str, required=True, help=BLANK_ERROR.format("username")
-)
-_user_parser.add_argument(
-    "password", type=str, required=True, help=BLANK_ERROR.format("password")
-)
+user_schema = UserSchema()
 
 
 class UserRegister(Resource):
@@ -46,15 +41,11 @@ class UserRegister(Resource):
         """
 
         # Parse user data into "data"
-        data = _user_parser.parse_args()
+        user = user_schema.load(request.get_json())
 
         # If user already exists, POST doesn't work.
-        if UserModel.find_by_username(data["username"]):
+        if UserModel.find_by_username(user.username):
             return {"message": USER_ALREADY_EXISTS}, 400
-
-        # Creating a user instance using UserModel.
-        # This object has some useful extra methods in it on top of the user data.
-        user = UserModel(**data)
 
         # Use save_to_db() method of UserModel
         user.save_to_db()
@@ -83,7 +74,7 @@ class User(Resource):
             return {"message": USER_NOT_FOUND}, 404
 
         # If user exists, return the content as a dictionary.
-        return user.json()
+        return user_schema.dump(user), 200
 
     @classmethod
     def delete(cls, user_id: int):
@@ -126,11 +117,13 @@ class UserLogin(Resource):
         :return:
         """
 
-        data = _user_parser.parse_args()
-        user = UserModel.find_by_username(data["username"])
+        user_json = request.get_json()
+        user_data = user_schema.load(user_json)
+
+        user = UserModel.find_by_username(user_data.username)
 
         # This is what authenticate function used to do.
-        if user and safe_str_cmp(user.password, data["password"]):
+        if user and safe_str_cmp(user.password, user_data.password):
             # identity= is what identity function used to do.
             access_token = create_access_token(identity=user.id, fresh=True)
             refresh_token = create_refresh_token(user.id)

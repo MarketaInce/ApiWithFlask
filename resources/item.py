@@ -1,133 +1,116 @@
 """
-ITEM RESOURCE
-
-HTTP verb methods for Item and ItemList Resources.
-For Item, we have get,post,delete and put HTTP verb methods.
-For ItemList, we have only get.
+ITEM
 """
 
-from flask_restful import Resource, reqparse
-from flask_jwt_extended import jwt_required, fresh_jwt_required
+from flask import request
+from flask_restful import Resource
+from flask_jwt import jwt_required
 from models.item import ItemModel
+from marshmallow import ValidationError
+from schemas.item import ItemSchema
 
-BLANK_ERROR = "'{}' cannot be left blank."
-ITEM_NOT_FOUND = "Item not found"
-NAME_ALREADY_EXISTS = "An item with name '{}' already exists"
-ERROR_INSERTING = "An error occurred inserting the item."
-ITEM_DELETED = "Item deleted."
+item_schema = ItemSchema()
+item_list_schema = ItemSchema(many=True)
 
 
 class Item(Resource):
     """
-    The Item resource enables users to get, post and delete item information to our Database.
-    A Flask-RestFul Resource object for accessing item inside /items.
+    A Flask-RestFul Resource object for accessing items inside /items.
     """
 
-    parser = reqparse.RequestParser()
-    parser.add_argument(
-        "price", type=float, required=True, help=BLANK_ERROR.format('price')
-    )
-    parser.add_argument(
-        "store_id", type=int, required=True, help=BLANK_ERROR.format('store_id')
-    )
-
-    @classmethod
-    def get(cls, name: str):
+    @jwt_required()
+    def get(self, name):
         """
-        The get method that handles GET requests.
+        The async function that handles GET requests.
         :param name: item name to be returned to user.
         :return:
         """
         item = ItemModel.find_by_name(name)
         if item:
-            return item.json()
+            return item_schema.dump(item), 200
 
         # If row returns none, 404 status_code is returned with a message.
-        return {"message": ITEM_NOT_FOUND}, 404
+        return {'message': 'Item not found'}, 404
 
     @classmethod
-    @fresh_jwt_required
-    def post(cls, name: str):
+    def post(cls, name):
         """
-        The post method that handles POST requests.
+        The async function that handles POST requests.
         :param name: item name to be created.
         :return:
         """
 
         # Check whether the request is properly made.
         if ItemModel.find_by_name(name):
-            return (
-                {"message": NAME_ALREADY_EXISTS.format(name)},
-                400,
-            )
+            return {'message': "An item with name '{}' already exists".format(name)}, 400
 
-        # Load data
-        request_data = cls.parser.parse_args()
+        item_json = request.get_json()  # "price", "store_id" comes from the payload.
+        item_json["name"] = name  # name: comes from the route. This is an element in the item resource.
 
-        # Create a new item
-        item = ItemModel(name, **request_data)
+        # This is where we deserialize the JSON.
+        item = item_schema.load(item_json)
 
+        # This is where we save the POSTed data coming from the user to database.
         try:
             item.save_to_db()
-        except:
-            return (
-                {
-                    "message": ERROR_INSERTING
-                },
-                500,
-            )  # Internal Server Error
+        except Exception as e:
+            return {'message': 'An error occured inserting the item. Here is the error {}'.format(
+                e)}, 500  # Internal Server Error
 
         # Return "response" with item and status code 201: CREATED
         return item.json(), 201
 
-    @classmethod
-    @jwt_required
-    def delete(cls, name: str):
+    def delete(self, name):
         """
-        The delete method that handles DELETE requests.
+        The async function that handles DELETE requests.
         :param name: item name to be deleted.
         """
+
         item = ItemModel.find_by_name(name)
         if item:
             item.delete_from_db()
-            return {"message": ITEM_DELETED}, 200
-        return {"message": ITEM_NOT_FOUND}, 404
+
+        return {"message": "Item deleted"}
 
     @classmethod
-    def put(cls, name: str):
+    def put(cls, name):
         """
-        The put method that handles PUT requests.
-        :param name: item name to be created or updated.
+        The async function that handles PUT requests.
+        :param name: item name to create or update.
         :return:
         """
         # Load and parse data
-        request_data = cls.parser.parse_args()
+        item_json = request.get_json()
 
         # Check whether name already exists
         item = ItemModel.find_by_name(name)
 
         # If name doesn't exist, create. Otherwise, update.
-        if item is None:
-            item = ItemModel(name, **request_data)
+
+        # If the name exists, just update the info with the new info coming from item_json
+        if item:
+            item.price = item_json["price"]  # This information comes from the payload.
         else:
-            item.price = request_data["price"]
+            # If the name doesn't exist, place "name" coming from the route to the item_json
+            # so that it will also be sent to the database. Then, create this new item using item_json.
+            item_json["name"] = name  # name: comes from the route. This is an element in the item resource.
+            item = item_schema.load(item_json)
 
         # In either case: insert or update we need to save to db ==> save_to_db()
         item.save_to_db()
         # Return item.
-        return item.json()
+        return item_schema.dump(item), 200
 
 
 class ItemList(Resource):
     """
-    Class for ItemList.
+    A Flask-RestFul Resource object for accessing /items.
     """
 
-    @classmethod
-    def get(cls):
+    def get(self):
         """
-        The get method that handles GET requests.
+        The async function that handles GET requests.
         :return:
         """
-        # Else, the user can only access to the item name.
-        return {"items": [item.json() for item in ItemModel.find_all()]}, 200
+
+        return {'items': item_list_schema.dump(ItemModel.find_all())}, 200

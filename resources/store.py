@@ -1,84 +1,60 @@
 """
-STORE RESOURCE
-
-HTTP verb methods for Store and StoreList Resources.
-For Store, we have get,post and put HTTP verb methods.
-For StoreList, we have only get.
+RESOURCES | STORE
 """
 
 from flask_restful import Resource
 from models.store import StoreModel
+from schemas.store import StoreSchema
 
-NAME_ALREADY_EXISTS = "A store with name '{}' already exists."
-ERROR_INSERTING = "An error occurred while inserting the store."
-STORE_NOT_FOUND = "Store not found."
-STORE_DELETED = "Store deleted."
+store_schema = StoreSchema()
+store_list_schema = StoreSchema(many=True)
 
 
 class Store(Resource):
     """
-    The Store resource enables users to get, post and delete store information to our Database.
-    A Flask-RestFul Resource object for accessing store inside /stores.
+    Bla bla
     """
 
-    @classmethod
-    def get(cls, name: str):
+    def get(self, name):
         """
-        The get method that handles GET requests.
-        :param name: "item" name requested.
+
+        :param name:
         :return:
         """
         store = StoreModel.find_by_name(name)
         if store:
-            return store.json()
-        return {"message": STORE_NOT_FOUND}, 404
+            return store_schema.dump(store), 200
+        return {'message': 'Store not found'}, 404
 
-    @classmethod
-    def post(cls, name: str):
-        """
-        The post method that handles POST requests.
-        :param name: "item" name posted.
-        :return:
-        """
+    def post(self, name):
         if StoreModel.find_by_name(name):
-            return (
-                {"message": NAME_ALREADY_EXISTS.format(name)},
-                400,
-            )
-        store = StoreModel(name)
+            return {'message': "A store with name '{}' already exists.".format(name)}, 400
+
+        store = StoreModel(name=name)
 
         try:
             store.save_to_db()
         except:
-            return {"message": ERROR_INSERTING}, 500
+            {'message': 'An error occured while creating the store.'}, 500
 
-        return store.json(), 201
+        return store_schema.dump(store), 201
 
-    @classmethod
-    def delete(cls, name: str):
-        """
-        The delete method that handles DELETE requests.
-        :param name: item to be deleted.
-        :return:
-        """
+    def delete(self, name):
         store = StoreModel.find_by_name(name)
         if store:
             store.delete_from_db()
-            return {"message": STORE_DELETED}, 200
 
-        return {"message": STORE_NOT_FOUND}, 404
+        return {'message': 'Store deleted'}
 
 
 class StoreList(Resource):
     """
-    The StoreList resource enables users to get store information from our Database.
-    A Flask-RestFul Resource object for getting a list of /stores.
+    StoreList class.
     """
 
-    @classmethod
-    def get(cls):
+    def get(self):
         """
         Get method for the list of stores.
         :return:
         """
-        return {"stores": [store.json() for store in StoreModel.find_all()]}, 200
+        return {'stores': store_list_schema.dump(StoreModel.find_all())}, 200
