@@ -32,7 +32,7 @@ def create_tables():
 
 
 jwt = JWT(app, authenticate, identity)  # /auth endpoint
-
+print("Hey")
 api.add_resource(Store, '/store/<string:name>')
 api.add_resource(Item, '/item/<string:name>')
 api.add_resource(ItemList, '/items')
